@@ -1,42 +1,42 @@
-# Frontrow — Home Assistant add-on image.
+# Frontrow — Home Assistant app image.
 #
-# The Supervisor builds this on the Pi itself, so the build has to be quick and
-# has to work on aarch64. Two stages:
-#   1. builder — full toolchain: compiles the React bundle and installs the
-#      backend's production dependencies (better-sqlite3 normally lands as a
-#      prebuilt binary, but the toolchain is here so a source build also works).
-#   2. runtime — slim image with only node_modules, the server and the bundle.
+# The Supervisor builds this on the Pi itself, so the build has to be fast on
+# aarch64. It is: better-sqlite3 v13 ships a prebuilt linuxmusl-arm64 binary, so
+# nothing is compiled and no toolchain is installed. Alpine keeps the runtime
+# under 100 MB.
+#
+# There is no build.yaml — the Supervisor deprecated it, and the base image is
+# named here instead.
 
 # ---------------------------------------------------------------- stage 1
-FROM node:24-bookworm-slim AS builder
+FROM node:24-alpine AS builder
+WORKDIR /build
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+COPY frontend/package.json frontend/package-lock.json* ./frontend/
+RUN cd frontend && npm ci --no-audit --no-fund
+COPY frontend/ ./frontend/
+RUN cd frontend && npm run build
 
-# --- frontend bundle
-WORKDIR /build/frontend
-COPY frontend/package.json frontend/package-lock.json* ./
-RUN npm install --no-audit --no-fund
-COPY frontend/ ./
-RUN npm run build
+COPY backend/package.json backend/package-lock.json* ./backend/
+RUN cd backend && npm ci --omit=dev --no-audit --no-fund
 
-# --- backend production dependencies
-WORKDIR /build/backend
-COPY backend/package.json backend/package-lock.json* ./
-RUN npm install --omit=dev --no-audit --no-fund
+# better-sqlite3 ships prebuilt binaries for eight platforms; the Pi needs one.
+RUN find backend/node_modules/better-sqlite3/prebuilds -mindepth 1 -maxdepth 1 \
+      -not -name 'linuxmusl-arm64' -not -name 'linuxmusl-x64' -exec rm -rf {} +
 
 # ---------------------------------------------------------------- stage 2
-FROM node:24-bookworm-slim
+FROM node:24-alpine
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends jq tzdata ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache jq tzdata
 
 ENV NODE_ENV=production \
     TZ=Europe/Amsterdam \
     PORT=8199 \
-    DB_PATH=/data/frontrow.db
+    DB_PATH=/data/frontrow.db \
+    # The Supervisor's bridge network has IPv6 enabled, and Node's verbatim DNS
+    # ordering tries AAAA first — on a home connection without IPv6 egress that
+    # turns every provider fetch into a timeout.
+    NODE_OPTIONS=--dns-result-order=ipv4first
 
 WORKDIR /app
 COPY --from=builder /build/backend/node_modules ./node_modules
@@ -46,6 +46,10 @@ COPY --from=builder /build/frontend/dist ./public
 
 COPY run.sh /run.sh
 RUN chmod +x /run.sh
+
+# Feeds the Supervisor's watchdog as well as `docker ps`.
+HEALTHCHECK --interval=60s --timeout=10s --start-period=20s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:${PORT}/api/health || exit 1
 
 EXPOSE 8199
 CMD ["/run.sh"]

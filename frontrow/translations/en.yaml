@@ -1,0 +1,38 @@
+configuration:
+  favourite_team:
+    name: My club
+    description: >-
+      The club the app is tuned to. Frontrow's colours follow this club — for
+      example ajax, feyenoord, psv, go_ahead_eagles. You can change it in the
+      app later too.
+  competitions:
+    name: Competitions
+    description: >-
+      Which competitions Frontrow tracks. Available: eredivisie, kkd,
+      knvb_beker, johan_cruijff_schaal, oranje, ucl, uel, uecl.
+  language:
+    name: Language
+    description: Dutch or English.
+  goal_notifications:
+    name: Goal notifications
+    description: Push a notification the moment a club you follow scores.
+  ha_notify_service:
+    name: Home Assistant notify service
+    description: >-
+      Optional, e.g. notify.mobile_app_pixel. Frontrow sends full-time results
+      here in addition to its own notifications.
+  vapid_contact:
+    name: Push contact address
+    description: >-
+      Optional but recommended on iPhone. A real mailto: address — Apple rejects
+      push subscriptions whose contact points at localhost.
+  demo_mode:
+    name: Demo mode
+    description: >-
+      Plays an invented Eredivisie matchday in twelve minutes against a separate
+      database. Useful for testing notifications out of season.
+  log_level:
+    name: Log level
+    description: How much Frontrow writes to the log.
+network:
+  8199/tcp: Web interface for the phones in the house

@@ -12,6 +12,7 @@ import { computeTable, topScorers, topAssists } from '../sync/standings.js';
 import { tick, status as syncStatus, urgency } from '../sync/scheduler.js';
 import { syncMatchDetail } from '../sync/engine.js';
 import { MATCH_SELECT, matchJson, teamJson, eventJson, competitionJson, listTeamsJson } from './serialize.js';
+import { router as crestRouter } from './crest.js';
 import { localDate, addDays, nowIso } from '../util/time.js';
 import config from '../config.js';
 import { logger } from '../util/log.js';
@@ -22,9 +23,25 @@ export const router = express.Router();
 const wrap = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 const profileId = (req) => String(req.query.profile || req.get('X-Frontrow-Profile') || 'default');
 
+// Crests are proxied and cached on the Pi so no browser ever talks to a CDN.
+router.use('/crest', crestRouter);
+
 // ------------------------------------------------------------------- system
+/**
+ * The Supervisor's watchdog probes this every two minutes and restarts the app
+ * after two consecutive failures, so it deliberately touches SQLite: a process
+ * that is listening but cannot read its own database is not healthy.
+ */
 router.get('/health', (req, res) => {
-  res.json({ ok: true, at: nowIso(), version: '1.0.0', demo: config.demoMode });
+  try {
+    const row = getDb().prepare('SELECT COUNT(*) AS n FROM competitions').get();
+    res.json({
+      ok: true, at: nowIso(), version: '1.0.0',
+      demo: config.demoMode, competitions: row.n, clients: hub.clientCount(),
+    });
+  } catch (err) {
+    res.status(503).json({ ok: false, error: String(err.message || err) });
+  }
 });
 
 /**

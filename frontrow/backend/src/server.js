@@ -25,14 +25,33 @@ const log = logger('server');
 const app = express();
 
 app.disable('x-powered-by');
-app.set('trust proxy', true);   // Home Assistant's ingress sits in front of us
 app.use(express.json({ limit: '256kb' }));
 
-// Home Assistant tells us who is looking, which is how the app can greet the
-// right family member without ever asking anyone to log in.
+// ---------------------------------------------------------------------------
+// The trust boundary.
+//
+// Frontrow is reachable two ways: through Home Assistant's ingress, and on a
+// bare port for the phones in the house. Only the first is authenticated.
+//
+// The Supervisor injects X-Remote-User-* to say who is looking, and strips any
+// copy a client tried to send. Nothing does that on the bare port — so anyone
+// on the LAN could otherwise `curl -H 'X-Remote-User-Id: …'` and impersonate
+// whoever they liked. Those headers are therefore honoured ONLY when the peer
+// really is the Supervisor. Same reasoning for X-Forwarded-For: trusting it
+// unconditionally would make the proxy headers spoofable from the network.
+// ---------------------------------------------------------------------------
+const SUPERVISOR_IP = '172.30.32.2';
+
+app.set('trust proxy', (ip) => ip === SUPERVISOR_IP || ip === `::ffff:${SUPERVISOR_IP}`);
+
 app.use((req, res, next) => {
-  const haUser = req.get('X-Remote-User-Display-Name') || req.get('X-Remote-User-Name');
-  if (haUser) req.haUser = haUser;
+  const peer = (req.socket.remoteAddress || '').replace(/^::ffff:/, '');
+  const viaIngress = peer === SUPERVISOR_IP && req.get('X-Hass-Source') === 'core.ingress';
+  req.viaIngress = viaIngress;
+  req.haUser = viaIngress
+    ? (req.get('X-Remote-User-Display-Name') || req.get('X-Remote-User-Name') || null)
+    : null;
+  req.haUserId = viaIngress ? (req.get('X-Remote-User-Id') || null) : null;
   next();
 });
 
@@ -118,11 +137,21 @@ function boot() {
     if (ha.isAvailable()) log.info('   Home Assistant API: connected');
   });
 
+  // The Supervisor sends SIGTERM and waits ten seconds before SIGKILL. Closing
+  // the database properly — and truncating the WAL — is what makes a restart
+  // or an update lossless.
   const shutdown = (signal) => {
-    log.info(`${signal} — shutting down`);
+    log.info(`${signal} — afsluiten`);
     scheduler.stop();
-    server.close(() => process.exit(0));
-    setTimeout(() => process.exit(0), 3000).unref();
+    server.close(() => {
+      try {
+        const db = getDb();
+        db.pragma('wal_checkpoint(TRUNCATE)');
+        db.close();
+      } catch { /* already closed */ }
+      process.exit(0);
+    });
+    setTimeout(() => process.exit(0), 5000).unref();
   };
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));

@@ -9,8 +9,8 @@
 // silently — see /api/notifications/status.
 
 import webpush from 'web-push';
-import { getDb } from '../db/database.js';
-import { getSetting, setSetting } from '../db/database.js';
+import { getDb, getSetting, setSetting } from '../db/database.js';
+import config from '../config.js';
 import { nowIso } from '../util/time.js';
 import { hashId } from '../util/text.js';
 import { logger } from '../util/log.js';
@@ -26,7 +26,16 @@ export function init() {
     setSetting('vapid', keys);
     log.info('generated VAPID keys');
   }
-  webpush.setVapidDetails('mailto:frontrow@localhost', keys.publicKey, keys.privateKey);
+  // Apple's push service rejects a VAPID subject pointing at localhost with
+  // BadJwtToken — and web-push only warns about it. The add-on exposes
+  // `vapid_contact` so an iPhone household can put a real address here.
+  const contact = config.vapidContact && /^mailto:.+@.+\..+/.test(config.vapidContact)
+    ? config.vapidContact
+    : 'mailto:frontrow@frontrow.invalid';
+  if (contact.endsWith('.invalid')) {
+    log.warn('geen vapid_contact ingesteld — pushmeldingen op iPhone kunnen geweigerd worden');
+  }
+  webpush.setVapidDetails(contact, keys.publicKey, keys.privateKey);
   ready = true;
 }
 

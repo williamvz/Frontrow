@@ -3,26 +3,49 @@ version: "1.0.0"
 slug: frontrow
 description: Reclamevrije live voetbalscores voor het Nederlandse voetbal — Eredivisie, KKD, KNVB Beker en Oranje, in de kleuren van jouw club
 url: https://github.com/williamvz/Frontrow
+
+# aarch64 and amd64 are the only non-deprecated architectures; an app that lists
+# only armv7/armhf/i386 now raises a repair issue in the Supervisor.
 arch:
   - aarch64
   - amd64
-  - armv7
-init: false
+
+# `init` is deliberately left at its default (true). With init:false Node runs as
+# PID 1, where SIGTERM has no default disposition — every stop would hang for the
+# full timeout and then be SIGKILLed, with the SQLite WAL unflushed.
 startup: application
 boot: auto
+
 ports:
   8199/tcp: 8199
 ports_description:
-  8199/tcp: Webinterface buiten ingress om (handig voor de telefoons van huisgenoten). Laat leeg om alleen via de HA-zijbalk te werken.
+  8199/tcp: Webinterface buiten ingress om, voor de telefoons in huis. Zet op leeg om alleen via de HA-zijbalk te werken.
+
 ingress: true
 ingress_port: 8199
-ingress_stream: true
 panel_icon: mdi:soccer-field
 panel_title: Frontrow
+# Frontrow is for the whole household, not just the HA administrator.
 panel_admin: false
+
 homeassistant_api: true
-hassio_api: false
+
+# The probe hits an endpoint that actually reads the database, so a wedged
+# process is reported as wedged. The user still has to enable the Watchdog
+# toggle on the add-on page — it is off by default.
 watchdog: "http://[HOST]:[PORT:8199]/api/health"
+
+# A hot backup would tar an open WAL database. Instead the app writes a
+# consistent snapshot first and the live files are excluded from the archive.
+backup: hot
+backup_pre: "node /app/src/db/snapshot.js"
+backup_exclude:
+  - "*/frontrow.db"
+  - "*/frontrow.db-wal"
+  - "*/frontrow.db-shm"
+  - "*/frontrow-demo.db*"
+  - "*/crests/*"
+
 options:
   favourite_team: ajax
   competitions:
@@ -33,8 +56,6 @@ options:
     - oranje
   language: nl
   goal_notifications: true
-  ha_notify_service: ""
-  ha_goal_event: true
   demo_mode: false
   log_level: info
 schema:
@@ -43,7 +64,9 @@ schema:
     - str
   language: list(nl|en)?
   goal_notifications: bool?
+  # Optional on purpose: giving these a default in `options:` would make them
+  # mandatory even though the schema marks them optional.
   ha_notify_service: str?
-  ha_goal_event: bool?
+  vapid_contact: str?
   demo_mode: bool?
   log_level: list(trace|debug|info|warning|error)?

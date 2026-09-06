@@ -36,6 +36,7 @@ export const config = {
 
   goalNotifications: bool(process.env.GOAL_NOTIFICATIONS, true),
   haNotifyService: process.env.HA_NOTIFY_SERVICE || '',
+  vapidContact: process.env.VAPID_CONTACT || '',
   haGoalEvent: bool(process.env.HA_GOAL_EVENT, true),
 
   // Present only inside a Home Assistant add-on; enables the Supervisor API.
