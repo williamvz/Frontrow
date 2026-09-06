@@ -160,9 +160,14 @@ export function ingest(competition, providerName, matches) {
       const isBackfill = created && TERMINAL.has(row.status);
       if (isBackfill) continue;
 
+      // "The score changed" is not the same as "somebody scored". A match
+      // kicking off moves the score from null to 0-0, and a VAR disallowance
+      // moves it back down; neither is a goal, and both would otherwise buzz
+      // every phone in the house.
       const scoreMoved = existing
-        && (row.home_score !== existing.home_score || row.away_score !== existing.away_score)
-        && row.home_score != null;
+        && existing.home_score != null && existing.away_score != null
+        && row.home_score != null && row.away_score != null
+        && (row.home_score > existing.home_score || row.away_score > existing.away_score);
 
       if (newGoals.length) {
         for (const g of newGoals) {
@@ -182,12 +187,13 @@ export function ingest(competition, providerName, matches) {
       } else if (scoreMoved) {
         // Some providers move the score before they publish the scorer. The
         // goal still happened, so it is still announced — just anonymously.
+        const homeScored = row.home_score > existing.home_score;
         announcements.push({
           type: 'match:goal',
           data: {
             matchId: id, competitionId: competition.id,
-            scoringTeamId: row.home_score > (existing.home_score ?? 0) ? homeTeamId : awayTeamId,
-            againstTeamId: row.home_score > (existing.home_score ?? 0) ? awayTeamId : homeTeamId,
+            scoringTeamId: homeScored ? homeTeamId : awayTeamId,
+            againstTeamId: homeScored ? awayTeamId : homeTeamId,
             player: null, assist: null, kind: 'goal',
             minute: row.minute, minuteDisplay: row.minute_display,
             homeScore: row.home_score, awayScore: row.away_score,

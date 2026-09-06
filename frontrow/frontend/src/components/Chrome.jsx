@@ -180,9 +180,13 @@ export function DateRibbon() {
               {Number(d.slice(8, 10))}
             </span>
             {dot && (
+              // The matchweek spine: bar height is the number of fixtures that
+              // day, so the rail answers "when is the football this week" in a
+              // single fixation instead of only naming dates.
               <span
                 style={{
-                  position: 'absolute', bottom: 5, width: 3, height: 3,
+                  position: 'absolute', bottom: 4, width: 3,
+                  height: Math.min(4 + info.n * 2, 14),
                   background: info.live > 0 ? 'var(--text-1)' : mine ? 'var(--accent)' : 'var(--text-4)',
                 }}
                 aria-hidden
@@ -212,9 +216,31 @@ const TABS = [
   { id: 'meer', key: 'nav.more', icon: 'more' },
 ];
 
-/** The bottom bar. The active tab is marked by a club-colour bar on its top edge. */
+/**
+ * The bottom bar. The active tab is marked by a club-colour bar on its top
+ * edge — and when a goal goes in somewhere you are not looking, the relevant
+ * tab rings once, in the scoring club's colour. No badge, no toast, no count:
+ * an anti-notification that tells you something happened without hijacking the
+ * screen you are reading.
+ */
 export function TabBar({ route, onNavigate }) {
   const { t } = useT();
+  const { flaring, teams } = useStore();
+  const [ring, setRing] = useState(null);
+  const seen = useRef(new Set());
+
+  useEffect(() => {
+    for (const [matchId, entry] of Object.entries(flaring)) {
+      if (seen.current.has(matchId + entry.at)) continue;
+      seen.current.add(matchId + entry.at);
+      const club = teams[entry.goal?.scoringTeamId];
+      setRing({ colour: club?.color || 'var(--accent)', at: entry.at });
+      const timer = setTimeout(() => setRing(null), 720);
+      return () => clearTimeout(timer);
+    }
+    return undefined;
+  }, [flaring, teams]);
+
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-30 flex"
@@ -236,6 +262,18 @@ export function TabBar({ route, onNavigate }) {
               <span
                 style={{
                   position: 'absolute', top: 0, width: 24, height: 2, background: 'var(--accent)',
+                }}
+                aria-hidden
+              />
+            )}
+            {ring && tab.id === 'vandaag' && (
+              <span
+                key={ring.at}
+                className="pointer-events-none absolute"
+                style={{
+                  top: 8, width: 22, height: 22, borderRadius: 22,
+                  border: `1px solid ${ring.colour}`,
+                  animation: 'fr-ring 700ms var(--ease-wipe) both',
                 }}
                 aria-hidden
               />

@@ -9,8 +9,11 @@
  */
 const widthFor = (name) => {
   const n = (name || '').length;
-  if (n > 19) return 74;
-  if (n > 14) return 86;
+  // Narrowing stops at 82: below that Archivo gets thin in a dim room. The
+  // curated short name in the database is the floor under this rule, and
+  // truncation is never an option.
+  if (n > 19) return 82;
+  if (n > 14) return 88;
   return 100;
 };
 

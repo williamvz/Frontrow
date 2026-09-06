@@ -200,11 +200,20 @@ export default {
     tvModeHint: 'Groot scorebord voor een scherm aan de muur.',
   },
   empty: {
-    noMatchesToday: 'Vandaag geen voetbal.',
+    noMatchesToday: 'Vandaag wordt er niet gespeeld.',
     noMatchesTodayHint: 'De eerstvolgende wedstrijd is {when}.',
     noMatchesAtAll: 'Nog geen wedstrijden opgehaald.',
     noMatchesAtAllHint: 'Frontrow haalt het programma op zodra er verbinding is.',
     nothingFollowed: 'Niets gevonden voor de clubs die je volgt.',
+    nextUp: 'Hierna',
+    countdownTo: '{team} speelt over',
+  },
+  today: {
+    now: 'Nu',
+    summaryMatches: '{n} wedstrijd',
+    summaryMatchesPlural: '{n} wedstrijden',
+    summaryLive: '{n} live',
+    manifesto: 'Geen advertenties, geen odds, nooit.',
   },
   goal: {
     banner: 'DOELPUNT',

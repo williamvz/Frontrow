@@ -11,6 +11,7 @@ import express from 'express';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as repo from '../db/repo.js';
+import { readableInk } from '../util/color.js';
 import config from '../config.js';
 import { logger } from '../util/log.js';
 
@@ -22,11 +23,15 @@ fs.mkdirSync(CACHE_DIR, { recursive: true });
 
 const inFlight = new Map();
 
-/** A crest drawn from the club's own colours, for when there is no image. */
+/**
+ * A crest drawn from the club's own colours, for when there is no image.
+ * The ink is chosen by contrast, not by convention: NEC's second colour is
+ * green and their first is red, and one on the other is unreadable.
+ */
 function monogram(team) {
   const label = (team?.code || team?.short_name || team?.name || '?').slice(0, 3).toUpperCase();
   const fill = team?.primary_color || '#2C231E';
-  const ink = team?.secondary_color && team.secondary_color !== fill ? team.secondary_color : '#FFFFFF';
+  const ink = readableInk(fill, team?.secondary_color);
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="${label}">
   <rect width="64" height="64" fill="${fill}"/>
   <text x="32" y="41" text-anchor="middle" font-family="system-ui, sans-serif" font-size="${label.length > 2 ? 22 : 28}" font-weight="800" fill="${ink}">${label}</text>

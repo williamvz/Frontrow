@@ -202,6 +202,12 @@ body {
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* The silent peripheral goal: one ring, once, then gone. */
+@keyframes fr-ring {
+  from { transform: scale(0.6); opacity: 0.9; }
+  to { transform: scale(1.8); opacity: 0; }
+}
+
 @keyframes fr-underline {
   from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }
@@ -230,6 +236,27 @@ html[data-motion='off'] *::after {
   animation-duration: 0.001ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 0.001ms !important;
+}
+
+/* Anti-banding.
+   Frontrow's surfaces are seven steps of near-black a few percent apart. On the
+   6-bit+FRC panels in cheap Android phones that ladder banks into visible
+   bands. A fixed, non-blending noise layer at 4% dithers it away for about two
+   kilobytes — insurance, not decoration, and off when the viewer has asked for
+   more contrast or less motion. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+  background-size: 120px 120px;
+}
+
+@media (prefers-contrast: more) {
+  body::after { display: none; }
 }
 
 /* -------------------------------------------------------------- utilities */

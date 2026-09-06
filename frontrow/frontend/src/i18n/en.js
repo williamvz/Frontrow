@@ -85,7 +85,16 @@ export default {
     competitions: 'Competitions', about: 'About Frontrow',
     tvMode: 'TV mode', tvModeHint: 'A big scoreboard for a screen on the wall.',
   },
+  today: {
+    now: 'Now',
+    summaryMatches: '{n} match',
+    summaryMatchesPlural: '{n} matches',
+    summaryLive: '{n} live',
+    manifesto: 'No ads, no odds, ever.',
+  },
   empty: {
+    nextUp: 'Next up',
+    countdownTo: '{team} play in',
     noMatchesToday: 'No football today.',
     noMatchesTodayHint: 'The next match is {when}.',
     noMatchesAtAll: 'No fixtures fetched yet.',

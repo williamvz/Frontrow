@@ -3,6 +3,7 @@ import { StoreProvider, useStore } from './store.jsx';
 import { I18nProvider, useT } from './i18n/index.jsx';
 import { useRoute, navigate } from './lib/router.js';
 import { TabBar } from './components/Chrome.jsx';
+import Announcer from './components/Announcer.jsx';
 import { RowSkeleton } from './components/Skeleton.jsx';
 
 import Today from './pages/Today.jsx';
@@ -73,6 +74,7 @@ function Shell() {
       <Suspense fallback={<RowSkeleton count={8} />}>
         <Routes />
       </Suspense>
+      <Announcer />
       {!chromeless && <TabBar route={TAB_FOR[name] || 'vandaag'} onNavigate={navigate} />}
     </>
   );

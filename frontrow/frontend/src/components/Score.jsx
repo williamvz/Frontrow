@@ -3,15 +3,15 @@ import { useEffect, useRef, useState } from 'react';
 /**
  * One score digit-group.
  *
- * Two rules, both about not moving: the numerals are tabular, and the box has a
- * reserved minimum width. A score going 9 to 10, or 0 to 1, must not shift a
- * single pixel of the row — that reflow is the cheapest-feeling failure a
- * live-score app can have.
+ * Two rules, both about not moving. The numerals are tabular AND each digit
+ * sits in its own fixed 1ch grid cell — belt and braces, because a score going
+ * 9 to 10 must not shift a pixel even if a future font subset were rebuilt
+ * without tabular figures. The box also has a reserved minimum width.
  *
  * When the value changes the new number ticks up into place, which is how you
  * notice a goal in a list you were not looking at.
  */
-export default function Score({ value, size = 28, dim = false, animate = true }) {
+export default function Score({ value, size = 28, dim = false, animate = true, weight }) {
   const [ticking, setTicking] = useState(false);
   const previous = useRef(value);
 
@@ -26,19 +26,26 @@ export default function Score({ value, size = 28, dim = false, animate = true })
     return undefined;
   }, [value, animate]);
 
+  const digits = value == null ? [] : String(value).split('');
+
   return (
     <span
-      className="num inline-block overflow-hidden text-right tabular-nums"
+      className="num inline-grid overflow-hidden text-right"
       style={{
+        gridAutoFlow: 'column',
+        gridAutoColumns: '1ch',
+        justifyContent: 'end',
         fontSize: size,
         lineHeight: 1,
-        minWidth: size * 0.66,
+        minWidth: '1ch',
         color: dim ? 'var(--text-2)' : 'var(--text-1)',
+        fontVariationSettings: weight ? `'wght' ${weight}, 'wdth' 108` : undefined,
+        transition: 'font-variation-settings 400ms var(--ease-wipe)',
       }}
     >
-      <span className={ticking ? 'fr-tick block' : 'block'}>
-        {value == null ? '' : value}
-      </span>
+      {digits.map((d, i) => (
+        <span key={i} className={ticking ? 'fr-tick block text-center' : 'block text-center'}>{d}</span>
+      ))}
     </span>
   );
 }

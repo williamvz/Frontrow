@@ -14,7 +14,7 @@ import ClubName from './ClubName.jsx';
  * squares rather than five letters, because shape reads faster than text.
  */
 const ZONE_COLOR = {
-  champion: 'var(--accent)',
+  champion: 'var(--warn)',
   ucl: 'var(--info)',
   uel: 'var(--info)',
   uecl: 'var(--win)',
@@ -75,6 +75,16 @@ export default function LeagueTable({ rows }) {
               gap: 6, height: 44,
               background: mine ? 'var(--accent-veil)' : 'var(--surface-1)',
               borderBottom: '1px solid var(--border)',
+              // TABLE GRAVITY: your club's row is never off-screen. It sticks
+              // under the header on the way down and above the tab bar on the
+              // way up — on the real row, so there is no clone to keep in sync.
+              ...(mine ? {
+                position: 'sticky',
+                top: 'calc(var(--header-h) + var(--chrome-top) + 66px)',
+                bottom: 'calc(var(--tabbar-h) + env(safe-area-inset-bottom, 0px))',
+                zIndex: 5,
+                boxShadow: '0 0 0 1px var(--accent-dim)',
+              } : {}),
             }}
           >
             <span className="relative flex items-center gap-1.5">
@@ -114,18 +124,8 @@ export default function LeagueTable({ rows }) {
             <Cell value={r.goalDiff > 0 ? `+${r.goalDiff}` : r.goalDiff} />
             <span className="num text-right" style={{ fontSize: 14 }}>{r.points}</span>
 
-            <span className="flex justify-end gap-0.5">
-              {(r.form || '').slice(-5).split('').map((c, i) => (
-                <span
-                  key={i}
-                  title={c}
-                  style={{
-                    width: 9, height: 9,
-                    background: c === 'W' ? 'var(--win)' : c === 'V' || c === 'L' ? 'var(--loss)' : 'var(--draw)',
-                  }}
-                  aria-hidden
-                />
-              ))}
+            <span className="flex justify-end gap-1" aria-label={`Vorm ${r.form}`}>
+              {(r.form || '').slice(-5).split('').map((c, i) => <FormMark key={i} result={c} />)}
             </span>
           </button>
         );
@@ -142,6 +142,33 @@ export default function LeagueTable({ rows }) {
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * A form mark is coded by SHAPE first and colour second: a solid block for a
+ * win, an outline for a draw, a hairline for a defeat. Someone with
+ * achromatopsia reads the same guide everyone else does.
+ */
+function FormMark({ result }) {
+  const win = result === 'W';
+  const loss = result === 'L' || result === 'V';
+  return (
+    <span
+      title={result}
+      style={{
+        width: 10, height: 10, display: 'block',
+        background: win ? 'var(--win)' : 'transparent',
+        border: win ? 'none' : loss ? '1px solid var(--loss)' : '1.5px solid var(--draw)',
+        borderTopWidth: loss ? 1 : undefined,
+        borderBottomWidth: loss ? 1 : undefined,
+        borderLeftWidth: loss ? 0 : undefined,
+        borderRightWidth: loss ? 0 : undefined,
+        marginTop: loss ? 4 : 0,
+        height: loss ? 2 : 10,
+      }}
+      aria-hidden
+    />
   );
 }
 

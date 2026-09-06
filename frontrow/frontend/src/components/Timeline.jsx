@@ -13,8 +13,30 @@ import { useT } from '../i18n/index.jsx';
  */
 const FULL = 96;              // 90 plus a realistic allowance for stoppage
 const TOP = 16;
-const HEIGHT = 420;
+const HEIGHT = 460;
 const SPINE_X = 52;
+const MIN_GAP = 24;           // the smallest gap two event labels can survive
+
+/**
+ * Football clusters. Three goals and a substitution inside ten minutes is the
+ * most interesting thing that can happen in a match and, on a true-time axis,
+ * also the most illegible: the labels land on top of each other.
+ *
+ * So the labels de-collide — each is pushed down until it clears the one above
+ * — while a connector line runs back to the event's real position on the spine.
+ * The shape of the match is preserved and every line is readable.
+ */
+function layout(events, at) {
+  const placed = [];
+  let previous = -Infinity;
+  for (const event of events) {
+    const trueY = at(event.minute, event.minuteExtra);
+    const y = Math.max(trueY, previous + MIN_GAP);
+    placed.push({ event, y, trueY, offset: y - trueY > 2 });
+    previous = y;
+  }
+  return placed;
+}
 
 export default function Timeline({ match, events }) {
   const { t } = useT();
@@ -30,12 +52,16 @@ export default function Timeline({ match, events }) {
   const at = (minute, extra = 0) =>
     TOP + (Math.min(FULL, (minute ?? 0) + (extra ?? 0) / 10) / FULL) * HEIGHT;
 
+  const placed = layout(events, at);
   const halftimeY = at(45);
+  // Half-time is a full-width rule, so it needs the same clearance as a label.
+  const shownHalftime = current > 45 || finished;
+  const bottom = Math.max(HEIGHT + TOP, (placed.at(-1)?.y ?? 0) + 40);
 
   return (
     <section
       className="relative px-4"
-      style={{ height: HEIGHT + TOP * 2, background: 'var(--surface-1)', borderBottom: '1px solid var(--border)' }}
+      style={{ height: bottom + TOP, background: 'var(--surface-1)', borderBottom: '1px solid var(--border)' }}
     >
       {/* the spine */}
       <span
@@ -55,7 +81,7 @@ export default function Timeline({ match, events }) {
       />
 
       {/* half time, as a full-width rule with a chip on it */}
-      {(current > 45 || finished) && (
+      {shownHalftime && (
         <div
           aria-hidden
           style={{ position: 'absolute', left: 0, right: 0, top: halftimeY, height: 1, background: 'var(--border)' }}
@@ -84,8 +110,8 @@ export default function Timeline({ match, events }) {
         </span>
       ))}
 
-      {events.map((e) => (
-        <EventMark key={e.id} event={e} match={match} y={at(e.minute, e.minuteExtra)} />
+      {placed.map(({ event, y, trueY, offset }) => (
+        <EventMark key={event.id} event={event} match={match} y={y} trueY={trueY} offset={offset} />
       ))}
 
       {live && (
@@ -103,33 +129,48 @@ export default function Timeline({ match, events }) {
 }
 
 /** Home events sit right of the spine; away events indent a further 16px. */
-function EventMark({ event, match, y }) {
+function EventMark({ event, match, y, trueY, offset }) {
   const { t } = useT();
   const home = event.teamId === match.home.id;
   const goal = ['goal', 'penalty', 'own_goal'].includes(event.type);
 
   return (
-    <div
-      className="absolute flex items-center gap-2"
-      style={{ left: SPINE_X + 14 + (home ? 0 : 16), top: y - 10, right: 8 }}
-    >
-      <Glyph type={event.type} />
-      <span className="num-soft shrink-0" style={{ fontSize: 11, color: 'var(--text-3)', width: 26 }}>
-        {event.minuteDisplay || `${event.minute}'`}
-      </span>
-      <span className="min-w-0 truncate" style={{ fontSize: 13, color: goal ? 'var(--text-1)' : 'var(--text-2)' }}>
-        {event.player || t(`event.${event.type}`)}
-        {event.type === 'own_goal' && <Suffix>{t('event.ownGoalShort')}</Suffix>}
-        {event.type === 'penalty' && <Suffix>{t('event.penaltyShort')}</Suffix>}
-        {event.type === 'substitution' && event.related && <Suffix>← {event.related}</Suffix>}
-        {event.assist && <Suffix>{event.assist}</Suffix>}
-      </span>
-      {goal && event.score && (
-        <span className="num shrink-0" style={{ fontSize: 13 }}>
-          {event.score.home}–{event.score.away}
-        </span>
+    <>
+      {/* the connector back to the minute this actually happened in */}
+      {offset && (
+        <svg
+          aria-hidden
+          className="absolute"
+          style={{ left: SPINE_X + 2, top: Math.min(trueY, y), width: 12, height: Math.abs(y - trueY) + 1 }}
+        >
+          <path
+            d={`M0 ${trueY < y ? 0.5 : Math.abs(y - trueY) + 0.5} H6 V${trueY < y ? Math.abs(y - trueY) + 0.5 : 0.5} H12`}
+            stroke="var(--border-strong)" strokeWidth="1" fill="none"
+          />
+        </svg>
       )}
-    </div>
+      <div
+        className="absolute flex items-center gap-2"
+        style={{ left: SPINE_X + 14 + (home ? 0 : 16), top: y - 10, right: 8 }}
+      >
+        <Glyph type={event.type} />
+        <span className="num-soft shrink-0" style={{ fontSize: 11, color: 'var(--text-3)', width: 26 }}>
+          {event.minuteDisplay || `${event.minute}'`}
+        </span>
+        <span className="min-w-0 truncate" style={{ fontSize: 13, color: goal ? 'var(--text-1)' : 'var(--text-2)' }}>
+          {event.player || t(`event.${event.type}`)}
+          {event.type === 'own_goal' && <Suffix>{t('event.ownGoalShort')}</Suffix>}
+          {event.type === 'penalty' && <Suffix>{t('event.penaltyShort')}</Suffix>}
+          {event.type === 'substitution' && event.related && <Suffix>← {event.related}</Suffix>}
+          {event.assist && <Suffix>{event.assist}</Suffix>}
+        </span>
+        {goal && event.score && (
+          <span className="num shrink-0" style={{ fontSize: 13 }}>
+            {event.score.home}–{event.score.away}
+          </span>
+        )}
+      </div>
+    </>
   );
 }
 

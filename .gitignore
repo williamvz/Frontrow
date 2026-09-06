@@ -12,3 +12,4 @@ backend/public/
 frontrow/backend/public/
 coverage/
 .vite/
+dist-audit/

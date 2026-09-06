@@ -37,6 +37,11 @@ function MatchRow({ match, followed = false, flaring = false, onOpen, spoilerFre
   const awayWon = finished && awayScore > homeScore;
   const dimHome = finished && awayWon;
   const dimAway = finished && homeWon;
+  // While a match is in play the team behind steps back a shade, so a column of
+  // live scores says who is winning before either number is read.
+  const inPlay = live || halftime;
+  const leadHome = inPlay && homeScore > awayScore;
+  const leadAway = inPlay && awayScore > homeScore;
 
   const hidden = spoilerFree && played;
 
@@ -65,39 +70,52 @@ function MatchRow({ match, followed = false, flaring = false, onOpen, spoilerFre
         aria-hidden
       />
 
-      {/* 2 — the state block */}
+      {/* 2 — when the match starts. For a live match the *minute* moves to the
+          right, next to the score: the jury's sharpest note was that putting
+          the clock on the far left and the score on the far right costs an
+          unnecessary horizontal saccade on the one glance the app exists for. */}
       <span
         className="flex h-full items-center justify-center"
         style={{ gridRow: '1 / 3', borderRight: '1px solid var(--border)' }}
       >
-        {live && <LiveBlock minute={match.minute} minuteDisplay={match.minuteDisplay} />}
-        {halftime && <LiveBlock halftime label={t('status.ht')} />}
-        {finished && (
+        {off ? (
+          <span className="label text-center" style={{ fontSize: 9, color: 'var(--text-3)', lineHeight: 1.1 }}>
+            {t(`status.${status}`)}
+          </span>
+        ) : finished ? (
           <span className="label" style={{ fontSize: 11, color: 'var(--text-3)' }}>
             {match.score.penalties ? t('status.pens') : t('status.ft')}
           </span>
-        )}
-        {status === 'scheduled' && (
-          <span className="num-soft" style={{ fontSize: 15, color: 'var(--text-2)' }}>
+        ) : (
+          <span
+            className="num-soft"
+            style={{ fontSize: 15, color: played ? 'var(--text-3)' : 'var(--text-2)' }}
+          >
             {time(match.kickoff, locale)}
-          </span>
-        )}
-        {off && (
-          <span className="label text-center" style={{ fontSize: 9, color: 'var(--text-3)', lineHeight: 1.1 }}>
-            {t(`status.${status}`)}
           </span>
         )}
       </span>
 
-      {/* 3 — the two team lines */}
-      <span className="flex h-full min-w-0 flex-col justify-center gap-0 pl-3">
+      {/* 3 — the two team lines. Every column spans both rows explicitly: left
+          to itself, a grid item lands in row 1 only and h-full becomes 36px. */}
+      <span className="flex h-full min-w-0 flex-col pl-3" style={{ gridRow: '1 / 3' }}>
         <TeamLine team={match.home} dim={off || dimHome} bold={live || halftime || homeWon} />
         <TeamLine team={match.away} dim={off || dimAway} bold={live || halftime || awayWon} />
       </span>
 
-      {/* 4 — the score, one per line, as a broadcast rundown does it. The two
-          bands are 36px each so a score always sits on its team's baseline. */}
-      <span className="flex h-full flex-col items-end" style={{ minWidth: 26 }}>
+      {/* 4 — the live minute and the score, together. The two bands are 36px
+          each so a score always sits on its team's baseline. */}
+      <span className="flex h-full items-center gap-3" style={{ gridRow: '1 / 3' }}>
+        {(live || halftime) && (
+          <LiveBlock
+            compact
+            halftime={halftime}
+            label={t('status.ht')}
+            minute={match.minute}
+            minuteDisplay={match.minuteDisplay}
+          />
+        )}
+        <span className="flex h-full flex-col items-end" style={{ minWidth: 26 }}>
         {hidden ? (
           <span
             className="label flex h-full items-center"
@@ -113,7 +131,7 @@ function MatchRow({ match, followed = false, flaring = false, onOpen, spoilerFre
                   ({match.score.penalties.home})
                 </span>
               )}
-              <Score value={homeScore} dim={dimHome} />
+              <Score value={homeScore} dim={dimHome || leadAway} weight={leadHome ? 800 : 700} />
             </span>
             <span className="flex items-center gap-1.5" style={{ height: 36 }}>
               {match.score.penalties && (
@@ -121,13 +139,14 @@ function MatchRow({ match, followed = false, flaring = false, onOpen, spoilerFre
                   ({match.score.penalties.away})
                 </span>
               )}
-              <Score value={awayScore} dim={dimAway} />
+              <Score value={awayScore} dim={dimAway || leadHome} weight={leadAway ? 800 : 700} />
             </span>
           </>
         ) : null}
+        </span>
       </span>
 
-      <span />
+      <span style={{ gridRow: '1 / 3' }} />
     </button>
   );
 }
@@ -142,8 +161,11 @@ function TeamLine({ team, dim, bold }) {
 }
 
 /**
- * One utterance per row, not four fragments — a screen reader should say
- * "Ajax 2, PSV 1, 67 minuten", which is what a sighted user sees in one glance.
+ * One utterance per row, not four fragments — a screen reader reading the list
+ * should say "Ajax 2, PSV 1, 67 minuten", which is what a sighted user sees in
+ * one glance. Live *changes* are announced by the single page-level Announcer,
+ * never by the rows, or a nine-match Saturday becomes eighteen live regions
+ * shouting over each other.
  */
 function ariaLabel(m, t, locale, hidden) {
   const teams = `${m.home.name} – ${m.away.name}`;
