@@ -16,9 +16,10 @@ if [ -f "$OPTIONS" ]; then
   GOAL_NOTIFICATIONS="$(get goal_notifications 'true')"
   HA_NOTIFY_SERVICE="$(get ha_notify_service '')"
   VAPID_CONTACT="$(get vapid_contact '')"
+  FOOTBALL_DATA_TOKEN="$(get football_data_token '')"
   LOG_LEVEL="$(get log_level 'info')"
   export FAVOURITE_TEAM COMPETITIONS LANGUAGE GOAL_NOTIFICATIONS \
-         HA_NOTIFY_SERVICE VAPID_CONTACT LOG_LEVEL
+         HA_NOTIFY_SERVICE VAPID_CONTACT FOOTBALL_DATA_TOKEN LOG_LEVEL
   [ "$(get demo_mode 'false')" = "true" ] && export DEMO_MODE=1
 
   # Only inside the Supervisor is the X-Remote-User-* header trustworthy.

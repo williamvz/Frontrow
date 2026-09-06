@@ -75,15 +75,23 @@
 
 import * as espn from './espn.js';
 import * as sportsdb from './sportsdb.js';
+import * as footballdata from './footballdata.js';
 import * as replay from './replay.js';
 import config from '../config.js';
 
-const ALL = { espn, sportsdb, replay };
+const ALL = { espn, sportsdb, footballdata, replay };
 
-/** The providers to use, in priority order. Demo mode swaps in the replay feed. */
+/**
+ * The providers to try, in order. Demo mode swaps the whole chain for the
+ * offline replay. football-data.org only joins the chain when a token has been
+ * configured — an unconfigured provider that always throws is just a slow
+ * failure on every sync.
+ */
 export function activeProviders() {
   if (config.demoMode) return [replay];
-  return config.providers.map((n) => ALL[n]).filter(Boolean);
+  const chain = config.providers.map((n) => ALL[n]).filter(Boolean);
+  if (footballdata.isConfigured() && !chain.includes(footballdata)) chain.push(footballdata);
+  return chain;
 }
 
 export function providerByName(name) {

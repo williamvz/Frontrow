@@ -1,0 +1,14 @@
+# Without this, `COPY frontend/ ./frontend/` would drop the build host's
+# node_modules (wrong architecture) on top of the ones just installed in the
+# image, and ship the local database and screenshots into the layer.
+**/node_modules
+**/dist
+**/dist-audit
+**/.data
+**/*.db
+**/*.db-wal
+**/*.db-shm
+**/coverage
+**/.vite
+**/*.log
+.git

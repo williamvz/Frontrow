@@ -1,7 +1,16 @@
-// TheSportsDB — the safety net. The free tier has no live minute and no goal
-// scorers, so it can never be primary, but it does have the full season
-// calendar and final scores, which is exactly what you want when ESPN changes
-// shape or has an outage: fixtures keep appearing and results still land.
+// TheSportsDB — the keyless safety net.
+//
+// It has no live minute and no goal scorers, so it can never be primary. What
+// it is for is the day ESPN changes shape: fixtures keep appearing and final
+// results still land.
+//
+// Honesty about its limits: since 2025 TheSportsDB has been moving the season
+// endpoints behind its Patreon tiers, and the public test key now gets 401 or
+// 403 on some of them. So this provider *disables itself* the moment it is told
+// it is not welcome, rather than retrying every twenty seconds forever, and it
+// says so once in the log. Set THESPORTSDB_KEY to a paid key to re-enable it,
+// or set `football_data_token` in the add-on options for a fallback that is
+// still free and still covers the Eredivisie.
 
 import config from '../config.js';
 import { logger } from '../util/log.js';
@@ -17,11 +26,22 @@ export const supports = {
 
 const HEADERS = { 'User-Agent': config.userAgent, Accept: 'application/json' };
 
+// Set once we have been refused; cleared only by a restart.
+let disabled = null;
+
 async function get(url) {
+  if (disabled) throw new Error(disabled);
   const res = await fetch(url, { headers: HEADERS, signal: AbortSignal.timeout(15000) });
+  if (res.status === 401 || res.status === 403) {
+    disabled = `TheSportsDB weigert de gratis sleutel (${res.status}) — deze bron wordt overgeslagen`;
+    log.warn(disabled);
+    throw new Error(disabled);
+  }
   if (!res.ok) throw new Error(`TheSportsDB ${res.status} for ${url}`);
   return res.json();
 }
+
+export const isDisabled = () => Boolean(disabled);
 
 function mapStatus(raw, hasScore) {
   const s = String(raw || '').toLowerCase().trim();

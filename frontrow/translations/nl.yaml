@@ -29,6 +29,12 @@ configuration:
       Optioneel maar aanbevolen op iPhone. Een echt mailto:-adres, bijvoorbeeld
       mailto:jij@voorbeeld.nl. Apple weigert pushmeldingen met een adres dat
       naar localhost wijst.
+  football_data_token:
+    description: >-
+      Optioneel. Een gratis sleutel van football-data.org. Frontrow gebruikt die
+      alleen als reservebron voor het geval de hoofdbron eruit ligt — dan blijven
+      het programma en de einduitslagen gewoon binnenkomen.
+    name: football-data.org sleutel
   demo_mode:
     name: Demomodus
     description: >-

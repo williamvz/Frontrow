@@ -68,5 +68,6 @@ schema:
   # mandatory even though the schema marks them optional.
   ha_notify_service: str?
   vapid_contact: str?
+  football_data_token: password?
   demo_mode: bool?
   log_level: list(trace|debug|info|warning|error)?

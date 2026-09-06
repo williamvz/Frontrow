@@ -26,6 +26,11 @@ configuration:
     description: >-
       Optional but recommended on iPhone. A real mailto: address — Apple rejects
       push subscriptions whose contact points at localhost.
+  football_data_token:
+    name: football-data.org token
+    description: >-
+      Optional. A free token from football-data.org, used only as a fallback if
+      the primary source goes down — fixtures and final results keep arriving.
   demo_mode:
     name: Demo mode
     description: >-

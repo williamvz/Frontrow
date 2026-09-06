@@ -20,9 +20,12 @@ RUN cd frontend && npm run build
 COPY backend/package.json backend/package-lock.json* ./backend/
 RUN cd backend && npm ci --omit=dev --no-audit --no-fund
 
-# better-sqlite3 ships prebuilt binaries for eight platforms; the Pi needs one.
+# better-sqlite3 ships prebuilt binaries for eight platforms; Alpine needs two
+# of them. The glob matters: they are flat `linuxmusl-arm64.node` files in v13,
+# and were directories in older versions — this matches either shape.
 RUN find backend/node_modules/better-sqlite3/prebuilds -mindepth 1 -maxdepth 1 \
-      -not -name 'linuxmusl-arm64' -not -name 'linuxmusl-x64' -exec rm -rf {} +
+      -not -name 'linuxmusl-arm64*' -not -name 'linuxmusl-x64*' -exec rm -rf {} + \
+ && ls backend/node_modules/better-sqlite3/prebuilds
 
 # ---------------------------------------------------------------- stage 2
 FROM node:24-alpine

@@ -37,6 +37,9 @@ export const config = {
   goalNotifications: bool(process.env.GOAL_NOTIFICATIONS, true),
   haNotifyService: process.env.HA_NOTIFY_SERVICE || '',
   vapidContact: process.env.VAPID_CONTACT || '',
+  // Optional. When set, football-data.org joins the fallback chain — free, and
+  // the only free source besides ESPN that carries the Eredivisie.
+  footballDataToken: process.env.FOOTBALL_DATA_TOKEN || '',
   haGoalEvent: bool(process.env.HA_GOAL_EVENT, true),
 
   // Present only inside a Home Assistant add-on; enables the Supervisor API.
@@ -51,7 +54,10 @@ export const config = {
   // live tick only asks the providers about competitions that actually have a
   // match on — nine idle competitions cost nothing.
   poll: {
-    hotSeconds: Number(process.env.POLL_HOT_SECONDS || 20),
+    // 25s while a followed club plays: fast enough to stay level with the
+    // commercial apps, slow enough to be a polite guest on a free API that
+    // publishes no rate limit and could start refusing us at any time.
+    hotSeconds: Number(process.env.POLL_HOT_SECONDS || 25),
     liveSeconds: Number(process.env.POLL_LIVE_SECONDS || 60),
     soonSeconds: Number(process.env.POLL_SOON_SECONDS || 300),
     idleSeconds: Number(process.env.POLL_IDLE_SECONDS || 1800),
