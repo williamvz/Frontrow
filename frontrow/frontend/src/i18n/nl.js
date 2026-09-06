@@ -46,8 +46,8 @@ export default {
     abandoned: 'Gestaakt',
     ft: 'ET',           // eindstand
     ht: 'RUST',
-    aet: 'NV',          // na verlenging
-    pens: "STR",        // strafschoppen
+    aet: 'n.v.',        // na verlenging — the annotation Dutch fans expect
+    pens: 'n.s.',       // na strafschoppen
     ftLong: 'Eindstand',
     aetLong: 'Na verlenging',
     pensLong: 'Na strafschoppen',
@@ -86,8 +86,8 @@ export default {
     substitution: 'Wissel',
     var: 'VAR',
     assist: 'assist',
-    ownGoalShort: 'e.d.',
-    penaltyShort: 'pen.',
+    ownGoalShort: '(e.d.)',
+    penaltyShort: '(p)',
     subOn: 'in',
     subOff: 'uit',
   },
@@ -95,14 +95,16 @@ export default {
     title: 'Stand',
     position: '#',
     club: 'Club',
+    // G is ambiguous in Dutch tables — it is used for both gespeeld and gelijk.
+    // Frontrow picks G / W / GL / V and stays consistent.
     played: 'G',
     won: 'W',
-    drawn: 'G',
+    drawn: 'GL',
     lost: 'V',
-    goalsFor: 'DV',
-    goalsAgainst: 'DT',
+    goalsFor: 'DPV',
+    goalsAgainst: 'DPT',
     goalDiff: 'DS',
-    points: 'Ptn',
+    points: 'PNT',
     form: 'Vorm',
     playedLong: 'Gespeeld',
     wonLong: 'Gewonnen',

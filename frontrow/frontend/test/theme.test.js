@@ -73,13 +73,22 @@ test('the two accents are never confusable', () => {
   }
 });
 
-test('monochrome clubs get a monochrome theme, not an invented colour', () => {
-  // Telstar play in white and black; Heracles in black and white.
-  for (const id of ['telstar', 'heracles']) {
-    const club = TEAMS.find((c) => c.id === id);
-    const t = buildTheme({ primary: club.primary_color, secondary: club.secondary_color });
-    assert.ok(hexToOklch(t['--accent']).C < 0.05, `${id}: accent should stay neutral, got ${t['--accent']}`);
-  }
+test('a club with no usable hue falls to its second colour, then to monochrome', () => {
+  // Two branches of the same rule. Telstar play in white and blue: the primary
+  // has no hue to work with, so the engine takes the blue rather than inventing
+  // something. Heracles play in black and white: there is no hue anywhere, so
+  // the theme commits to monochrome instead of making a colour up.
+  const telstar = TEAMS.find((c) => c.id === 'telstar');
+  const tel = buildTheme({ primary: telstar.primary_color, secondary: telstar.secondary_color });
+  assert.ok(hexToOklch(tel['--accent']).C > 0.05,
+    `telstar: should adopt its second colour, got ${tel['--accent']}`);
+  assert.ok(hueDistance(hexToOklch(tel['--accent']).H, hexToOklch(telstar.secondary_color).H) < 15,
+    'telstar: the accent should be the club\'s own blue, not a new hue');
+
+  const heracles = TEAMS.find((c) => c.id === 'heracles');
+  const her = buildTheme({ primary: heracles.primary_color, secondary: heracles.secondary_color });
+  assert.ok(hexToOklch(her['--accent']).C < 0.05,
+    `heracles: accent should stay neutral, got ${her['--accent']}`);
 });
 
 test('chromatic clubs keep their own hue', () => {

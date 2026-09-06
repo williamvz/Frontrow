@@ -1,6 +1,13 @@
 // Dutch professional clubs, seeded so Frontrow looks right the moment it starts
 // — crest colours, city, stadium and the alias spellings the providers use.
 //
+// The Eredivisie colours are curated from club brand sources, not scraped:
+// ESPN's own `color` field gets FC Groningen (returns white) and Fortuna (no
+// green at all) plainly wrong, so an automated refresh must never overwrite
+// these. NEC and Telstar are the two genuinely unresolved cases — third-party
+// datasets disagree — and both are marked below; correct them in Instellingen
+// and the app will remember.
+//
 // The sync engine can create a team it has never seen before (it happens with
 // cup ties against amateur sides), so this list is a head start, not a fence.
 // Colours are best-effort club brand colours; every one of them can be
@@ -17,15 +24,15 @@ export const TEAMS = [
        aliases: ['ajax', 'ajax amsterdam', 'afc ajax'] }),
   NL({ id: 'psv', name: 'PSV', full_name: 'PSV Eindhoven', short_name: 'PSV', code: 'PSV',
        city: 'Eindhoven', stadium: 'Philips Stadion', founded: 1913,
-       primary_color: '#EE2223', secondary_color: '#FFFFFF',
+       primary_color: '#ED1C24', secondary_color: '#FFFFFF',
        aliases: ['psv', 'psv eindhoven'] }),
   NL({ id: 'feyenoord', name: 'Feyenoord', full_name: 'Feyenoord Rotterdam', short_name: 'Feyenoord', code: 'FEY',
        city: 'Rotterdam', stadium: 'De Kuip', founded: 1908,
-       primary_color: '#DA020E', secondary_color: '#111111',
+       primary_color: '#E30613', secondary_color: '#FFFFFF',
        aliases: ['feyenoord', 'feyenoord rotterdam'] }),
   NL({ id: 'az', name: 'AZ', full_name: 'AZ Alkmaar', short_name: 'AZ', code: 'AZ',
        city: 'Alkmaar', stadium: 'AFAS Stadion', founded: 1967,
-       primary_color: '#DA291C', secondary_color: '#FFFFFF',
+       primary_color: '#E30613', secondary_color: '#FFFFFF',
        aliases: ['az', 'az alkmaar', 'alkmaar zaanstreek'] }),
   NL({ id: 'twente', name: 'FC Twente', full_name: 'FC Twente', short_name: 'Twente', code: 'TWE',
        city: 'Enschede', stadium: 'De Grolsch Veste', founded: 1965,
@@ -33,23 +40,24 @@ export const TEAMS = [
        aliases: ['twente', 'fc twente', 'twente enschede'] }),
   NL({ id: 'utrecht', name: 'FC Utrecht', full_name: 'FC Utrecht', short_name: 'Utrecht', code: 'UTR',
        city: 'Utrecht', stadium: 'Stadion Galgenwaard', founded: 1970,
-       primary_color: '#C8102E', secondary_color: '#111111',
+       primary_color: '#E30613', secondary_color: '#FFFFFF',
        aliases: ['utrecht', 'fc utrecht'] }),
   NL({ id: 'go_ahead_eagles', name: 'Go Ahead Eagles', full_name: 'Go Ahead Eagles', short_name: 'Go Ahead', code: 'GAE',
        city: 'Deventer', stadium: 'De Adelaarshorst', founded: 1902,
-       primary_color: '#E31C24', secondary_color: '#FFD200',
+       primary_color: '#E4032E', secondary_color: '#FFE500',
        aliases: ['go ahead eagles', 'go ahead', 'gae'] }),
+  // NEC: sources disagree (red+green, green+black, ESPN says red+light-blue).
   NL({ id: 'nec', name: 'NEC', full_name: 'NEC Nijmegen', short_name: 'NEC', code: 'NEC',
        city: 'Nijmegen', stadium: 'De Goffert', founded: 1900,
-       primary_color: '#C8102E', secondary_color: '#007A33',
+       primary_color: '#E30613', secondary_color: '#009036',
        aliases: ['nec', 'nec nijmegen', 'n e c'] }),
   NL({ id: 'heerenveen', name: 'sc Heerenveen', full_name: 'sc Heerenveen', short_name: 'Heerenveen', code: 'HEE',
        city: 'Heerenveen', stadium: 'Abe Lenstra Stadion', founded: 1920,
-       primary_color: '#0057B8', secondary_color: '#E1001A',
+       primary_color: '#005CA9', secondary_color: '#E30613',
        aliases: ['heerenveen', 'sc heerenveen'] }),
   NL({ id: 'groningen', name: 'FC Groningen', full_name: 'FC Groningen', short_name: 'Groningen', code: 'GRO',
        city: 'Groningen', stadium: 'Euroborg', founded: 1971,
-       primary_color: '#00954C', secondary_color: '#FFFFFF',
+       primary_color: '#009B3A', secondary_color: '#FFFFFF',
        aliases: ['groningen', 'fc groningen'] }),
   NL({ id: 'sparta', name: 'Sparta Rotterdam', full_name: 'Sparta Rotterdam', short_name: 'Sparta', code: 'SPA',
        city: 'Rotterdam', stadium: 'Het Kasteel', founded: 1888,
@@ -57,31 +65,32 @@ export const TEAMS = [
        aliases: ['sparta', 'sparta rotterdam'] }),
   NL({ id: 'pec_zwolle', name: 'PEC Zwolle', full_name: 'PEC Zwolle', short_name: 'PEC Zwolle', code: 'PEC',
        city: 'Zwolle', stadium: 'MAC³PARK stadion', founded: 1910,
-       primary_color: '#004B93', secondary_color: '#FFFFFF',
+       primary_color: '#003DA5', secondary_color: '#FFFFFF',
        aliases: ['pec zwolle', 'zwolle', 'pec'] }),
   NL({ id: 'fortuna_sittard', name: 'Fortuna Sittard', full_name: 'Fortuna Sittard', short_name: 'Fortuna', code: 'FOR',
        city: 'Sittard', stadium: 'Fortuna Sittard Stadion', founded: 1968,
-       primary_color: '#FFE500', secondary_color: '#007A33',
+       primary_color: '#FFE600', secondary_color: '#009036',
        aliases: ['fortuna sittard', 'fortuna'] }),
+  // Telstar: "de Witte Leeuwen" — white and blue; ESPN reports red and yellow.
   NL({ id: 'telstar', name: 'Telstar', full_name: 'SC Telstar', short_name: 'Telstar', code: 'TEL',
        city: 'Velsen-Zuid', stadium: 'BUKO Stadion', founded: 1963,
-       primary_color: '#FFFFFF', secondary_color: '#111111',
+       primary_color: '#FFFFFF', secondary_color: '#005EB8',
        aliases: ['telstar', 'sc telstar'] }),
   NL({ id: 'excelsior', name: 'Excelsior', full_name: 'SBV Excelsior', short_name: 'Excelsior', code: 'EXC',
        city: 'Rotterdam', stadium: 'Van Donge & De Roo Stadion', founded: 1902,
-       primary_color: '#DA291C', secondary_color: '#111111',
+       primary_color: '#E30613', secondary_color: '#000000',
        aliases: ['excelsior', 'sbv excelsior', 'excelsior rotterdam'] }),
   NL({ id: 'ado_den_haag', name: 'ADO Den Haag', full_name: 'ADO Den Haag', short_name: 'ADO', code: 'ADO',
        city: 'Den Haag', stadium: 'Bingoal Stadion', founded: 1905,
-       primary_color: '#009639', secondary_color: '#FFF200',
+       primary_color: '#FFD500', secondary_color: '#007A33',
        aliases: ['ado den haag', 'ado', 'den haag'] }),
   NL({ id: 'cambuur', name: 'SC Cambuur', full_name: 'SC Cambuur Leeuwarden', short_name: 'Cambuur', code: 'CAM',
        city: 'Leeuwarden', stadium: 'Cambuur Stadion', founded: 1964,
-       primary_color: '#FFD100', secondary_color: '#005CB9',
+       primary_color: '#FFE500', secondary_color: '#003DA5',
        aliases: ['cambuur', 'sc cambuur', 'cambuur leeuwarden'] }),
   NL({ id: 'willem_ii', name: 'Willem II', full_name: 'Willem II Tilburg', short_name: 'Willem II', code: 'WIL',
        city: 'Tilburg', stadium: 'Koning Willem II Stadion', founded: 1896,
-       primary_color: '#E30613', secondary_color: '#004B93',
+       primary_color: '#E30613', secondary_color: '#003DA5',
        aliases: ['willem ii', 'willem 2', 'willem ii tilburg'] }),
 
   // ------------------------------- Keuken Kampioen Divisie 2026/27 (20) ----
