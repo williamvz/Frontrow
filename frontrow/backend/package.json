@@ -1,0 +1,20 @@
+{
+  "name": "frontrow-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frontrow — ad-free live football scores for Dutch football. API, sync engine and realtime hub.",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": { "node": ">=20.19" },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-concurrency=1 test/*.test.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "express": "^5.2.1",
+    "node-cron": "^4.6.0",
+    "web-push": "^3.6.7"
+  }
+}

@@ -1,0 +1,7 @@
+# The Dockerfile pulls the multi-arch node image directly, so no per-arch base
+# mapping is needed. This file's presence tells the Supervisor to build the
+# add-on locally on the Pi rather than pull a prebuilt image.
+build_from:
+  aarch64: node:24-bookworm-slim
+  amd64: node:24-bookworm-slim
+  armv7: node:24-bookworm-slim

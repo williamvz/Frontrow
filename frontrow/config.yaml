@@ -1,0 +1,49 @@
+name: Frontrow
+version: "1.0.0"
+slug: frontrow
+description: Reclamevrije live voetbalscores voor het Nederlandse voetbal — Eredivisie, KKD, KNVB Beker en Oranje, in de kleuren van jouw club
+url: https://github.com/williamvz/Frontrow
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+startup: application
+boot: auto
+ports:
+  8199/tcp: 8199
+ports_description:
+  8199/tcp: Webinterface buiten ingress om (handig voor de telefoons van huisgenoten). Laat leeg om alleen via de HA-zijbalk te werken.
+ingress: true
+ingress_port: 8199
+ingress_stream: true
+panel_icon: mdi:soccer-field
+panel_title: Frontrow
+panel_admin: false
+homeassistant_api: true
+hassio_api: false
+watchdog: "http://[HOST]:[PORT:8199]/api/health"
+options:
+  favourite_team: ajax
+  competitions:
+    - eredivisie
+    - kkd
+    - knvb_beker
+    - johan_cruijff_schaal
+    - oranje
+  language: nl
+  goal_notifications: true
+  ha_notify_service: ""
+  ha_goal_event: true
+  demo_mode: false
+  log_level: info
+schema:
+  favourite_team: str?
+  competitions:
+    - str
+  language: list(nl|en)?
+  goal_notifications: bool?
+  ha_notify_service: str?
+  ha_goal_event: bool?
+  demo_mode: bool?
+  log_level: list(trace|debug|info|warning|error)?

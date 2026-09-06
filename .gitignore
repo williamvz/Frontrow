@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.local
+.DS_Store
+*.db
+*.db-wal
+*.db-shm
+backend/public/
+frontrow/backend/public/
+coverage/
+.vite/
