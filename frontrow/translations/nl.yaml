@@ -1,0 +1,47 @@
+configuration:
+  favourite_team:
+    name: Mijn club
+    description: >-
+      De club waar de app op wordt afgestemd. De kleuren van Frontrow volgen
+      deze club. Bijvoorbeeld ajax, feyenoord, psv, go_ahead_eagles. Je kunt dit
+      later ook in de app zelf wijzigen.
+  competitions:
+    name: Competities
+    description: >-
+      Welke competities Frontrow bijhoudt. Beschikbaar: eredivisie, kkd,
+      knvb_beker, johan_cruijff_schaal, oranje, ucl, uel, uecl.
+  language:
+    name: Taal
+    description: De taal van de app. Nederlands of Engels.
+  goal_notifications:
+    name: Doelpuntmeldingen
+    description: >-
+      Stuur een melding naar je telefoon zodra er gescoord wordt in een
+      wedstrijd van een club die je volgt.
+  ha_notify_service:
+    name: Home Assistant notify-service
+    description: >-
+      Optioneel. Bijvoorbeeld notify.mobile_app_pixel. Frontrow stuurt hier de
+      eindstanden naartoe, naast de meldingen in de app zelf.
+  vapid_contact:
+    name: Contactadres voor pushmeldingen
+    description: >-
+      Optioneel maar aanbevolen op iPhone. Een echt mailto:-adres, bijvoorbeeld
+      mailto:jij@voorbeeld.nl. Apple weigert pushmeldingen met een adres dat
+      naar localhost wijst.
+  football_data_token:
+    description: >-
+      Optioneel. Een gratis sleutel van football-data.org. Frontrow gebruikt die
+      alleen als reservebron voor het geval de hoofdbron eruit ligt — dan blijven
+      het programma en de einduitslagen gewoon binnenkomen.
+    name: football-data.org sleutel
+  demo_mode:
+    name: Demomodus
+    description: >-
+      Speelt een verzonnen Eredivisie-speelronde af in twaalf minuten, op een
+      aparte database. Handig om je meldingen te testen buiten het seizoen.
+  log_level:
+    name: Logniveau
+    description: Hoeveel Frontrow in het logboek zet.
+network:
+  8199/tcp: Webinterface voor de telefoons in huis

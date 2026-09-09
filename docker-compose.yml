@@ -1,0 +1,22 @@
+# Standalone deployment, without Home Assistant. For the add-on route see
+# README.md — you do not need this file there.
+services:
+  frontrow:
+    build: ./frontrow
+    container_name: frontrow
+    restart: unless-stopped
+    ports:
+      - "8199:8199"
+    environment:
+      - TZ=Europe/Amsterdam
+      - FAVOURITE_TEAM=${FAVOURITE_TEAM:-ajax}
+      - COMPETITIONS=${COMPETITIONS:-eredivisie,kkd,knvb_beker,johan_cruijff_schaal,oranje}
+      - LANGUAGE=${LANGUAGE:-nl}
+      - DEMO_MODE=${DEMO_MODE:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - DB_PATH=/data/frontrow.db
+    volumes:
+      - frontrow_data:/data
+
+volumes:
+  frontrow_data:

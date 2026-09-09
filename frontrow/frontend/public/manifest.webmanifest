@@ -1,0 +1,23 @@
+{
+  "name": "Frontrow",
+  "short_name": "Frontrow",
+  "description": "Reclamevrije live voetbalscores voor het Nederlandse voetbal.",
+  "start_url": "./#/vandaag",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#100A07",
+  "theme_color": "#100A07",
+  "lang": "nl",
+  "categories": ["sports"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Vandaag", "url": "./#/vandaag" },
+    { "name": "Mijn clubs", "url": "./#/mijn" },
+    { "name": "TV-modus", "url": "./#/tv" }
+  ]
+}

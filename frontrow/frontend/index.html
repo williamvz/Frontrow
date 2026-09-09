@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport-fit=cover puts the app behind the notch and the home
+         indicator; index.css pays that back with safe-area insets. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="description" content="Frontrow — reclamevrije live voetbalscores voor het Nederlandse voetbal." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Frontrow" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
+    <title>Frontrow</title>
+    <script>
+      // Paint the saved club theme before React mounts, so the app never
+      // flashes a default palette on top of an Ajax-red install.
+      try {
+        var saved = localStorage.getItem('frontrow.theme');
+        if (saved) {
+          var t = JSON.parse(saved);
+          for (var k in t) document.documentElement.style.setProperty(k, t[k]);
+        }
+      } catch (e) { /* first run, private mode, or corrupt value — ignore */ }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
